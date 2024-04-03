@@ -97,7 +97,7 @@ export default function Auth() {
             label="Name"
             value={registerData.name}
             onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-            placeholder="Enter your name"
+            placeholder="Enter your names"
           />
           <Input
             type="email"

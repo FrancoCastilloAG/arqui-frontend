@@ -1,11 +1,17 @@
 "use client"
 import React, { useState } from "react";
-import { Input, Button } from "@nextui-org/react";
+import { Button, Input } from "@nextui-org/react";
+import { useUser } from '../userContext';
+import { redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
+
 
 export default function Auth() {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
-  const [registerData, setRegisterData] = useState({ name: "", email: "", password: "" });
+  const [registerData, setRegisterData] = useState({ name: "", email: "", password: "", rut: "" });
   const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const { setUser } = useUser();
+  const router = useRouter()
 
   const handleLogin = async () => {
     try {
@@ -17,11 +23,13 @@ export default function Auth() {
         },
         body: JSON.stringify(loginData),
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         if (data.statusCode === 200) {
           console.log("Ingreso exitoso");
+          setUser({ accessToken: data.accessToken, rut: data.rut });
+          router.push('/')
         } else {
           console.error('Error:', data);
         }
@@ -32,7 +40,7 @@ export default function Auth() {
       console.error('Error:', error);
     }
   };
-  
+
 
   const handleRegister = async () => {
     try {
@@ -51,6 +59,8 @@ export default function Auth() {
         const data = await response.json();
         if (data.statusCode === 200) {
           console.log("Ingreso exitoso");
+          setUser({ accessToken: data.accessToken, rut: data.rut });
+          window.location.href = "/";
         } else {
           console.error('Error:', data);
         }
@@ -68,55 +78,29 @@ export default function Auth() {
   };
 
   return (
-    <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
-      {!showRegisterForm ? (
-        <div>
-          <h2>Login</h2>
-          <Input
-            type="email"
-            label="Email"
-            value={loginData.email}
-            onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-            placeholder="Enter your email"
-          />
-          <Input
-            type="password"
-            label="Password"
-            value={loginData.password}
-            onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-            placeholder="Enter your password"
-          />
-          <Button onClick={handleLogin}>Login</Button>
-          <p>Don't have an account? <Button onClick={toggleForm}>Register</Button></p>
-        </div>
-      ) : (
-        <div>
-          <h2>Register</h2>
-          <Input
-            type="text"
-            label="Name"
-            value={registerData.name}
-            onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-            placeholder="Enter your names"
-          />
-          <Input
-            type="email"
-            label="Email"
-            value={registerData.email}
-            onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-            placeholder="Enter your email"
-          />
-          <Input
-            type="password"
-            label="Password"
-            value={registerData.password}
-            onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-            placeholder="Enter your password"
-          />
-          <Button onClick={handleRegister}>Register</Button>
-          <p>Already have an account? <Button onClick={toggleForm}>Login</Button></p>
-        </div>
-      )}
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+      <div>
+        {showRegisterForm ? (
+          <>
+            <h2>Registro</h2>
+            <Input label="Nombre" value={registerData.name} onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })} />
+            <Input label="Email" value={registerData.email} onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })} />
+            <Input label="Contraseña" type="password" value={registerData.password} onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })} />
+            <Input label="RUT" value={registerData.rut} onChange={(e) => setRegisterData({ ...registerData, rut: e.target.value })} />
+            <Button onClick={handleRegister}>Registrarse</Button>
+            <p>¿Ya tienes una cuenta? <Button onClick={toggleForm}>Inicia sesión</Button></p>
+          </>
+        ) : (
+          <>
+            <h2>Iniciar sesión</h2>
+            <Input label="Email" value={loginData.email} onChange={(e) => setLoginData({ ...loginData, email: e.target.value })} />
+            <Input label="Contraseña" type="password" value={loginData.password} onChange={(e) => setLoginData({ ...loginData, password: e.target.value })} />
+            <Button onClick={handleLogin}>Iniciar sesión</Button>
+            <p>¿No tienes una cuenta? <Button onClick={toggleForm}>Regístrate</Button></p>
+          </>
+        )}
+      </div>
     </div>
+  
   );
 }

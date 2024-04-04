@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
+import Sidebar from "@/components/sidebar";
+import {NextUIProvider} from "@nextui-org/system";
+import { UserProvider } from "./userContext";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -15,8 +15,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <UserProvider>
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className="flex">
+          <Sidebar />
+          <div className="flex-1">
+            {children}
+          </div>
+      </body>
     </html>
+    </UserProvider>
   );
 }

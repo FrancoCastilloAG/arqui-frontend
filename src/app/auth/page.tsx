@@ -15,7 +15,6 @@ export default function Auth() {
 
   const handleLogin = async () => {
     try {
-      console.log('Login Data:', loginData); // Imprimir los datos enviados a la API
       const response = await fetch('http://localhost:3001/auth/login', {
         method: 'POST',
         headers: {
@@ -23,23 +22,24 @@ export default function Auth() {
         },
         body: JSON.stringify(loginData),
       });
-
+  
       if (response.ok) {
         const data = await response.json();
-        if (data.statusCode === 200) {
-          console.log("Ingreso exitoso");
-          setUser({ accessToken: data.accessToken, rut: data.rut });
-          router.push('/')
+        if (data && data.access_token) { // Verificar si hay un token de acceso en la respuesta
+          console.log("Ingreso exitoso, token generado :", data.access_token);
+          setUser({ accessToken: data.access_token, rut: data.rut });
+          router.push('/');
         } else {
-          console.error('Error:', data);
+          console.error('Error interno:', data);
         }
       } else {
-        console.error('Error:', response.statusText);
+        console.error('Error externo:', response.statusText);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error funcion login:', error);
     }
   };
+  
 
 
   const handleRegister = async () => {

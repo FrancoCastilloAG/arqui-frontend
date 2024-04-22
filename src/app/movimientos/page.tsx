@@ -22,63 +22,76 @@ const MovementPage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (user) {
-      fetch(`http://localhost:3001/movements/${user.rut}`)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then((data: Movement[]) => {
-          setMovements(data);
-        })
-        .catch(error => {
-          console.error('Error fetching movements:', error);
-        });
+    if (user && user.accessToken) {
+      console.log("accestoekn mandado en el bearer desde el front:",user.accessToken)
+      fetch(`http://localhost:3001/movements/${user.rut}`, {
+        headers: {
+          Authorization: `Bearer ${user.accessToken}`
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then((data: Movement[]) => {
+        setMovements(data);
+      })
+      .catch(error => {
+        console.error('Error fetching movements:', error);
+      });
     }
   }, [user]);
 
   const handleAddMovement = () => {
     const { category, description, value } = newMovementData;
     
-    fetch(`http://localhost:3001/movements/${user?.rut}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ category, description, value }),
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      console.log('Solicitud POST enviada:', JSON.stringify({ category, description, value }));
-      return response.json();
-    })
-    .then((data: Movement) => {
-      setMovements([...movements, data]);
-    })
-    .catch(error => {
-      console.error('Error adding movement:', error);
-    });
+    if (user && user.accessToken) {
+      fetch(`http://localhost:3001/movements/${user?.rut}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.accessToken}`
+        },
+        body: JSON.stringify({ category, description, value }),
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        console.log('Solicitud POST enviada:', JSON.stringify({ category, description, value }));
+        return response.json();
+      })
+      .then((data: Movement) => {
+        setMovements([...movements, data]);
+      })
+      .catch(error => {
+        console.error('Error adding movement:', error);
+      });
+    }
   
     setModalOpen(false);
   };
   
   const handleDeleteMovement = (id: string) => {
-    fetch(`http://localhost:3001/movements/${id}`, {
-      method: 'DELETE',
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      setMovements(movements.filter(movement => movement.id !== id));
-    })
-    .catch(error => {
-      console.error('Error deleting movement:', error);
-    });
+    if (user && user.accessToken) {
+      fetch(`http://localhost:3001/movements/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${user.accessToken}`
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        setMovements(movements.filter(movement => movement.id !== id));
+      })
+      .catch(error => {
+        console.error('Error deleting movement:', error);
+      });
+    }
   };
 
   return (
@@ -91,11 +104,11 @@ const MovementPage: React.FC = () => {
           <Input label="Categoría" value={newMovementData.category || ''} onChange={(e) => setNewMovementData({...newMovementData, category: e.target.value})} />
           <Input label="Descripción" value={newMovementData.description || ''} onChange={(e) => setNewMovementData({...newMovementData, description: e.target.value})} />
           <Input 
-  label="Valor" 
-  type="number" 
-  value={newMovementData.value !== undefined ? String(newMovementData.value) : ''} 
-  onChange={(e) => setNewMovementData({...newMovementData, value: parseFloat(e.target.value)})} 
-/>
+            label="Valor" 
+            type="number" 
+            value={newMovementData.value !== undefined ? String(newMovementData.value) : ''} 
+            onChange={(e) => setNewMovementData({...newMovementData, value: parseFloat(e.target.value)})} 
+          />
 
           <Button onClick={handleAddMovement}>Agregar</Button>
           <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
